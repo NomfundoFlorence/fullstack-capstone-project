@@ -18,40 +18,30 @@ dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET;
 
 router.post('/register', async (req, res) => {
-//Step 2
     try {
         // Task 1: Connect to `giftsdb` in MongoDB through `connectToDatabase` in `db.js`
         const db = await connectToDatabase();
-
         // Task 2: Access MongoDB collection
         const collection = db.collection("users");
-
         //Task 3: Check for existing email
-        const inputEmail = req.body.email;
-        const existingEmail = await collection.findOne({ email: inputEmail });
-        
+        const existingEmail = await collection.findOne({ email: req.body.email });
         const salt = await bcryptjs.genSalt(10);
         const hash = await bcryptjs.hash(req.body.password, salt);
-        // const email = req.body.email;
-        const { email, firstName, lastName, password } = req.body;
+        const email = req.body.email;
         //Task 4: Save user details in database
         const newUser = await collection.insertOne({
-            email: email,
-            firstName: firstName,
-            lastName: lastName,
+            email: req.body.email,
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
             password: hash,
             createdAt: new Date(),
         });
-
-         // {{insert code here}} //Task 5: Create JWT authentication with user._id as payload
         const payload = {
             user: {
                 id: newUser.insertedId,
             },
         };
-
         const authtoken = jwt.sign(payload, JWT_SECRET);
-
         logger.info('User registered successfully');
         res.json({authtoken,email});
     } catch (e) {
@@ -59,45 +49,38 @@ router.post('/register', async (req, res) => {
     }
 });
 
-router.post("/login", async (req, res) => {
+router.post('/login', async (req, res) => {
+    console.log("\n\n Inside login")
     try {
-        // Task 1: Connect to `giftsdb` in MongoDB through `connectToDatabase` in `db.js`.
-        const db = connectToDatabase();
-        // Task 2: Access MongoDB `users` collection
-        const collection = db.collection("users")
-        // Task 3: Check for user credentials in database
-        const user = await collection.findOne({ email: req.body.email })
-        // Task 4: Task 4: Check if the password matches the encrypyted password and send appropriate message on mismatch
-        if (user) {
-            const result = await bcryptjs.compare(req.body.password, user.password)
-
-            if (!result) {
-                logger.error("Passwords do not match");
-                res.status(404).json({ error: "Wrong password" });
+        // const collection = await connectToDatabase();
+        const db = await connectToDatabase();
+        const collection = db.collection("users");
+        const theUser = await collection.findOne({ email: req.body.email });
+        if (theUser) {
+            let result = await bcryptjs.compare(req.body.password, theUser.password)
+            if(!result) {
+                logger.error('Passwords do not match');
+                return res.status(404).json({ error: 'Wrong pasword' });
             }
-
-            // Task 5: Fetch user details from database
-            const userName = user.firstName;
-            const userEmail = user.email;
-            // Task 6: Create JWT authentication if passwords match with user._id as payload
             let payload = {
                 user: {
-                    id: user._id.toString(),
+                    id: theUser._id.toString(),
                 },
             };
+            const userName = theUser.firstName;
+            const userEmail = theUser.email;
             const authtoken = jwt.sign(payload, JWT_SECRET);
             logger.info('User logged in successfully');
-            return res.status(200).json({authtoken, userName, userEmail });
+            return res.status(200).json({ authtoken, userName, userEmail });
         } else {
-            // Task 7: Send appropriate message if user not found
             logger.error('User not found');
             return res.status(404).json({ error: 'User not found' });
         }
-    }catch (e) {
-        logger.error(e)
-        return res.status(500).send("Insternal server error", e.message);
-    }
-})
+    } catch (e) {
+        logger.error(e);
+        return res.status(500).json({ error: 'Internal server error', details: e.message });
+      }
+});
 
 router.put('/update', async (req, res) => {
     // Task 2: Validate the input using `validationResult` and return approiate message if there is an error.
