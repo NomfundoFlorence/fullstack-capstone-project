@@ -74,7 +74,6 @@ function SearchPage() {
                     <div className="filter-section mb-3 p-3 border rounded">
                         <h5>Filters</h5>
                         <div className="d-flex flex-column">
-                            {/* Task 3: Dynamically generate category and condition dropdown options.*/}
                             <label htmlFor="categorySelect">Category</label>
                             <select id="categorySelect" className="form-control my-1">
                                 <option value="">All</option>
@@ -90,7 +89,6 @@ function SearchPage() {
                                 <option key={condition} value={condition}>{condition}</option>
                                 ))}
                             </select>
-                            {/* Task 4: Implement an age range slider and display the selected value. */}
                             <label htmlFor="ageRange">Less than {ageRange} years</label>
                             <input
                                 type="range"
@@ -103,7 +101,6 @@ function SearchPage() {
                             />
                         </div>
                     </div>
-                    {/* Task 7: Add text input field for search criteria*/}
                     <input
                         type="text"
                         className="form-control mb-2"
@@ -112,15 +109,12 @@ function SearchPage() {
                         onChange={e => setSearchQuery(e.target.value)}
                     />
                     
-                    {/* Task 8: Implement search button with onClick event to trigger search:*/}
                     <button className="btn btn-primary" onClick={handleSearch}>Search</button>
                     
-                    {/*Task 5: Display search results and handle empty results with a message. */}
                     <div className="search-results mt-4">
                         {searchResults.length > 0 ? (
                         searchResults.map(product => (
                         <div key={product.id} className="card mb-3">
-                            {/* Check if product has an image and display it */}
                             <img src={product.image} alt={product.name} className="card-img-top" />
                             <div className="card-body">
                                 <h5 className="card-title">{product.name}</h5>

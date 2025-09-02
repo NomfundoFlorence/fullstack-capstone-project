@@ -113,7 +113,7 @@ return (
     type="email"
     name="email"
     value={userDetails.email}
-    disabled // Disable the email field
+    disabled
   />
 </label>
 <label>
